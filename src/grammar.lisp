@@ -897,3 +897,51 @@ RETURNS: (values S-B {A-B} P-B)"
                                                       (list x)))
                                            body))))
                      grammar :recursive nil)))
+
+;; Dragon book 2nd Edition
+(defun grammar-left-factor (grammar &optional (unique (gensym)))
+  "Left factor a grammar"
+  (labels ((helper (head prods)
+                   (let* ((valid-tupless
+                            (mapcar
+                              (lambda (p1)
+                                (loop with res = "anything"
+                                      for i from 1 to (length p1)
+                                      do (setf res `(,i . ,(loop for p2 in prods
+                                                                 when (<= (length p1) (length p2))
+                                                                 when (every #'equal (subseq p1 0 i) p2)
+                                                                 collect p2)))
+                                      when (< 1 (length (cdr res)))
+                                      collect res))
+                              prods))
+                          (valid-tuples (apply #'append valid-tupless))
+                          (best (car (sort valid-tuples #'> :key #'car)))
+                          )
+                     (if (equal best nil)
+                       (mapcar (lambda (p) (cons head p)) prods)
+                       (let* (
+                              (bestix (car best))
+                              (newsym (gsymbol-gen (intern (format nil "~S-P-~S" head (length prods))) unique))
+                              (branch-production `(,head ,@(subseq (cadr best) 0 bestix) ,newsym))
+                              (new-productions (loop for p in (cdr best)
+                                                     collect (cons newsym (subseq p bestix))))
+                              (old-productions (loop for p in prods
+                                                     unless (member p (cdr best))
+                                                     collect p))
+                              )
+                         (concatenate 'list (helper head old-productions) (list branch-production) new-productions)
+                         )
+                       )
+                     )
+                   ))
+    (let* ((ht (group grammar (lambda (prod) (car prod)) #'cdr))
+           (acc '())
+           (action (lambda (head prods)
+                     (setf acc (append (helper head prods) acc))))
+           (cmp (lambda (p) (if (equal (car p) (grammar-start-nonterminal grammar)) 0 1)))
+           )
+      (maphash action ht)
+      (sort acc #'< :key cmp)
+      )
+    )
+  )

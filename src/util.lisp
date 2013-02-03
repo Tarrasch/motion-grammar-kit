@@ -231,7 +231,6 @@
       (eq symbol :epsilon)
       (equal symbol '(:epsilon))))
 
-
 ;;;;;;;;;;
 ;; TRIE ;;
 ;;;;;;;;;;
@@ -299,6 +298,22 @@
       (visit trie nil))))
 
 
+;;;;;;;;;;;;;;
+;; Grouping ;;
+;;;;;;;;;;;;;;
+
+(defun modifyhash (ht key mod)
+  "Given a hashtable ht, do ht[key] := mod(ht[key])"
+  (let ((oldval (gethash key ht)))
+    (setf (gethash key ht) (funcall mod oldval))))
+
+(defun group (xs keyify &optional (valueify #'(lambda (a) a)))
+  "Given an list, group them by keys (retrieved by keyify)"
+  (let ((ht (make-hash-table)))
+    (mapcar (lambda (e) (modifyhash ht (funcall keyify e)
+                                    (lambda (vs) (cons (funcall valueify e) vs))))
+            xs)
+    ht))
 
 ;;;;;;;;;
 ;; I/O ;;
