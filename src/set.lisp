@@ -81,6 +81,7 @@ MUTABLE: Should this be a mutable set?
 (defun finite-set-map (result-type function set)
   (map-finite-set result-type function set))
 
+; TODO: Refactor make initial-value optional
 (defun fold-finite-set (function initial-value set)
   "Fold FUNCTION over SET beginning with first argument INITIAL-VALUE."
   (etypecase set
@@ -90,6 +91,15 @@ MUTABLE: Should this be a mutable set?
      (loop for k being the hash-keys of set
         for value = (funcall function initial-value k) then (funcall function value k)
         finally (return value)))))
+
+; TODO: Add initial-value
+(defun maxby-finite-set (function set)
+  "Return value which maximimizes according to FUNCTION
+FUNCTION: lambda (elem) => int
+RESULT: elem"
+  (let ((picker (lambda (x y) (if (>= (funcall function x) (funcall function y)) x y))))
+    (fold-finite-set picker (car set) (cdr set)))) ; TODO: Don't assume set is a list!
+
 
 (defun sort-finite-set (set)
   (etypecase set

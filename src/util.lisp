@@ -315,6 +315,15 @@
             xs)
     ht))
 
+;;;;;;;;;;;
+;; Scan  ;;
+;;;;;;;;;;;
+
+(defun scancar (function list)
+  (if list
+    (cons (funcall function (car list) (cdr list)) (scancar function (cdr list)))
+    nil))
+
 ;;;;;;;;;
 ;; I/O ;;
 ;;;;;;;;;
