@@ -39,30 +39,23 @@
 ;; ATN states
 ;;;;;;;;;;;;;;;
 
-;;; An atn-state is encoded in a values like this:
-;;;
-;;;   (values string-desc corresponding-nonterminal maybe-prod-id type)
-;;;
-;;; where type is (or 'start 'mid 'final)
-;;; 
-;;; This is kinda redundant because maybe-prod-id != nil implies type = 'mid
-;;;
-;;; TODO Define exactly what a prod-id refers to
-
 (defstruct (atn-state (:type list))
   name  ;; String description AND unique identifier
   nonterminal ;; The nonterminal the state is within
   type ;; (or 'start 'mid 'final)
   prod-id ;; (or fixnum nil), When type is 'mid, then a fixnum for prodution id, nil otherwise
+          ;; TODO Define exactly what a prod-id refers to
   ) 
 
 (defun init-atn-state (name nonterminal type pid)
-  (let ((as (make-atn-state))
-        )
-    
+  (let ((as (make-atn-state)))
+    (setf (atn-state-name as) name
+          (atn-state-nonterminal as) nonterminal
+          (atn-state-type as) type
+          (atn-state-prod-id as) pid 
+          )
+    as
     ) 
-  ;;; TODO not only for lists
-  (list name nonterminal type pid)
   )
 
 (defun atn-start-name (head)
@@ -75,7 +68,12 @@
   (init-atn-state (format nil "p_~A" int) head 'mid prod-id))
 
 (defun atn-state-compare (a b)
-  (string-compare (atn-state-name a) (atn-state-name b)))
+  "Compare two atn states"
+  (string-compare (atn-state-name a) (atn-state-name b))) ;; TODO: This is real version
+  ;;;(string-compare (or (atn-state-name a) a) (or (atn-state-name b) b)))  ;; TODO for debugging
+
+(defun atn-state-equal (a b)
+  (= 0 (atn-state-compare a b)))
 
 (defun atn-state-final-p (p)
   (equal 'final (atn-state-type p)))
@@ -84,18 +82,22 @@
 (defun grammar->ATN (grammar)
   "Return the ATN of the grammar in fa format. The ATN strictly speaking isn't
    a finite automata, but it's a natural way to encode it"
-  (let ((counter 0)
+  (let ((state-counter 0)
+        (prod-counter -1)
         )
     ;TODO fix the code duplication in ATN-numeric-name calls
     ;TODO prettify by having something like "grammar-map-grouped (lambda (head bodys))"
       (make-fa (apply #'append (grammar-map 'list (lambda (head body)
+                                    (incf prod-counter)
                                     (labels ((chain (xs)
                                                (if xs
-                                                 (cons (list (ATN-numeric-name counter head 123) (car xs) (ATN-numeric-name (incf counter) head 123)) (chain (cdr xs)))
-                                                 nil)))
-                                    (let* ((beg (list (ATN-START-NAME head) :epsilon (ATN-NUMERIC-NAME (incf counter) head 123)))
+                                                 (cons (list (numeric state-counter) (car xs) (numeric (incf state-counter))) (chain (cdr xs)))
+                                                 nil))
+                                             (numeric (id) (atn-numeric-name id head prod-counter))
+                                             )
+                                    (let* ((beg (list (ATN-START-NAME head) :epsilon (numeric (incf state-counter))))
                                            (mids (chain body))
-                                           (end (list (ATN-NUMERIC-NAME counter head 123) :epsilon (ATN-FINAL-NAME head)))
+                                           (end (list (numeric state-counter) :epsilon (ATN-FINAL-NAME head)))
                                            )
                                       `(,beg ,@mids ,end)
                                       ))

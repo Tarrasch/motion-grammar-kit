@@ -185,7 +185,33 @@
 
 (defun pattern-compile-and (patterns exp bindings then else)
   (declare (type symbol exp))
-  (pattern-compile-exp :pattern patterns (make-sequence 'list (length patterns) :initial-element exp) bindings then else))
+  (with-gensyms (then-fun)
+    ;; some variables to setq in the continuation
+    (let ((first t)
+          (bindings-0 bindings)
+          (or-bindings nil))
+    (labels ((rec (patterns bindings)
+               (if patterns
+                   (pattern-compile (car patterns) exp bindings
+                                    ;; found a true case
+                                    (lambda (bindings)
+                                      (let ((bindings-1 (remove-duplicates (set-difference bindings bindings-0))))
+                                        (if first
+                                            (setq or-bindings bindings-1
+                                                  first nil)
+                                            (assert (set-equal or-bindings bindings-1) nil
+                                                    "Each or clause must produce the same bindings.  Want ~A, saw ~A"
+                                                    or-bindings bindings-1))
+                                        `(,then-fun ,@or-bindings)))
+                                    ;; false, check next
+                                    (lambda (bindings)
+                                      (rec (cdr patterns) bindings)))
+                   ;; all false, goto else
+                   (pattern-continue else bindings))))
+      (let ((inner (rec patterns bindings))) ;; now the previous vars have been setq'ed
+        `(flet ((,then-fun (,@or-bindings)
+                  ,(pattern-continue then (append or-bindings bindings))))
+           ,inner))))))
 
 (defun pattern-compile-exp (car cdr exp bindings then else)
   (declare (type symbol exp car))
@@ -202,8 +228,7 @@
     ;(and (pattern-compile-and cdr exp bindings then else))
     ;; nested pattern
     (:pattern (pattern-compile-pattern cdr exp bindings then else))
-    (otherwise
-      (pattern-compile-meta (cons car cdr) exp bindings then else))))
+    (otherwise (pattern-compile-meta (cons car cdr) exp bindings then else))))
 
 (defmacro if-pattern (pattern exp then &optional else)
   (let* ((exp-sym (if (constantp pattern) pattern
@@ -234,7 +259,7 @@
       `(let ((,exp-sym ,exp))
          ,(helper cases)))))
 
-(defmacro pattern-lambda (pattern &rest body)
+(defmacro pattern-lambda (pattern &body body)
   (with-gensyms (vars)
     `(lambda (&rest ,vars) (if-pattern (:pattern ,@pattern) ,vars (progn ,@body) nil))))
 
