@@ -1,0 +1,265 @@
+mg_test:34:relink_command="(cd /home/arka3/repos/motion-grammar-kit; { test -z \"\${LIBRARY_PATH+set}\" || unset LIBRARY_PATH || { LIBRARY_PATH=; export LIBRARY_PATH; }; }; { test -z \"\${COMPILER_PATH+set}\" || unset COMPILER_PATH || { COMPILER_PATH=; export COMPILER_PATH; }; }; { test -z \"\${GCC_EXEC_PREFIX+set}\" || unset GCC_EXEC_PREFIX || { GCC_EXEC_PREFIX=; export GCC_EXEC_PREFIX; }; }; { test -z \"\${LD_RUN_PATH+set}\" || unset LD_RUN_PATH || { LD_RUN_PATH=; export LD_RUN_PATH; }; }; { test -z \"\${LD_LIBRARY_PATH+set}\" || unset LD_LIBRARY_PATH || { LD_LIBRARY_PATH=; export LD_LIBRARY_PATH; }; }; PATH=/home/arka3/.bin:/home/arka3/.cabal/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games; export PATH; gcc -std=gnu99 -Wc++-compat -Wwrite-strings -Wshadow -Wfloat-equal -Wpointer-arith -Wconversion -Wextra -g -O2 -Wall -o \$progdir/\$file mg_test.o  ./.libs/libmotgram.so -lach -Wl,-rpath -Wl,/home/arka3/repos/motion-grammar-kit/.libs)"
+Makefile:154:ACLOCAL = ${SHELL} /home/arka3/repos/motion-grammar-kit/missing --run aclocal-1.11
+Makefile:157:AUTOCONF = ${SHELL} /home/arka3/repos/motion-grammar-kit/missing --run autoconf
+Makefile:158:AUTOHEADER = ${SHELL} /home/arka3/repos/motion-grammar-kit/missing --run autoheader
+Makefile:159:AUTOMAKE = ${SHELL} /home/arka3/repos/motion-grammar-kit/missing --run automake-1.11
+Makefile:217:MAKEINFO = ${SHELL} /home/arka3/repos/motion-grammar-kit/missing --run makeinfo
+Makefile:240:abs_builddir = /home/arka3/repos/motion-grammar-kit
+Makefile:241:abs_srcdir = /home/arka3/repos/motion-grammar-kit
+Makefile:242:abs_top_builddir = /home/arka3/repos/motion-grammar-kit
+Makefile:243:abs_top_srcdir = /home/arka3/repos/motion-grammar-kit
+Makefile:273:install_sh = ${SHELL} /home/arka3/repos/motion-grammar-kit/install-sh
+examples/example.lisp:65:    (funcall (intern "QUICKLOAD" :ql) :motion-grammar-kit)
+examples/example.lisp:66:    (require :motion-grammar-kit))
+examples/example.lisp:78:  (mg::grammar->c-predictive-parser
+examples/example.lisp:89:       (terminals (mg::grammar-terminals grammar))
+examples/example.lisp:98:  (mg::grammar->c-supervised-predictive-parser
+examples/Makefile:1:# Makefile for motion-grammar-kit example code
+examples/Makefile:6:# These are set to build in the ./src subdirectory of motion-grammar-kit
+examples/Makefile:10:# LD_LIBRARY_PATH is set to run in the ./src subdirectory of motion-grammar-kit
+src/bnf.lisp:37:(in-package :motion-grammar-kit)
+src/bnf.lisp:95:    (grammar-print grammar :output s)))
+src/test.lisp:37:(in-package :motion-grammar-kit)
+src/test.lisp:407:(lisp-unit:define-test grammar-basic
+src/test.lisp:411:     (equal (grammar-map 'list (lambda (l r) (list :a l r))
+src/test.lisp:417:          (n (grammar-nonterminals g)))
+src/test.lisp:424:     (grammar-substitute-terminal-list '((a b c) (c b f))
+src/test.lisp:429:     (equal (grammar-remove-nonsentential '((s a b) (s 1) (a 1)) '(1))
+src/test.lisp:435:     (equal (grammar-remove-unreachable '((a b) (b 1) (b 3) (c 2)))
+src/test.lisp:439:     (equal (grammar-remove-unreachable '((a 1 c) (b 1) (b 3) (c 2)))
+src/test.lisp:444:     (equal (grammar-remove-useless '((s a b) (s 1) (a 1)) '(1))
+src/test.lisp:457:           (first (grammar-first-function grammar))
+src/test.lisp:458:           (follow (grammar-follow-function grammar))
+src/test.lisp:591:    (lisp-unit:assert-true (grammar-chain-rule-p '(1 2 3) '(a b c) '(a b)))
+src/test.lisp:592:    (lisp-unit:assert-true (grammar-chain-rule-p '(1 2 3) '(a b c) '(c a)))
+src/test.lisp:593:    (lisp-unit:assert-false (grammar-chain-rule-p '(1 2 3) '(a b c) '(a 1)))
+src/test.lisp:594:    (lisp-unit:assert-false (grammar-chain-rule-p '(1 2 3) '(a b c) '(a)))
+src/test.lisp:595:    (lisp-unit:assert-false (grammar-chain-rule-p '(1 2 3) '(a b c) '(a b c)))
+src/test.lisp:596:    (lisp-unit:assert-false (grammar-chain-rule-p '(1 2 3) '(a b c) '(a 1 c)))))
+src/test.lisp:598:(lisp-unit:define-test grammar-regular
+src/test.lisp:603:     (fa-equiv fa (grammar->fa  gram-1)))
+src/test.lisp:605:     (fa-equiv fa (nfa->dfa (grammar->fa gram-2))))))
+src/test.lisp:608:(lisp-unit:define-test grammar-norm
+src/test.lisp:616:                       (grammar-remove-epsilon sipser-2-10)))
+src/test.lisp:619:                       (grammar-remove-unit (grammar-remove-epsilon sipser-2-10)))))
+src/test.lisp:622:   (finite-set-equal (blum-koch-subgrammar-productions 'b '((b a 2) (a 1)))
+src/test.lisp:627:   (finite-set-equal (blum-koch-subgrammar-productions  'b
+src/test.lisp:642:(lisp-unit:define-test grammar-left-factoring
+src/test.lisp:645:           (let ((actual-output (grammar-left-factor input nil)))
+src/test.lisp:648:             (lisp-unit:assert-equal (grammar-start-nonterminal actual-output)
+src/test.lisp:649:                                     (grammar-start-nonterminal expected-output)))))
+src/test.lisp:650:    (let ((grammar-1  '((A a)))
+src/test.lisp:651:          (grammar-1-res '((A a)))
+src/test.lisp:652:          (grammar-2 '((A |a| B)
+src/test.lisp:656:          (grammar-2-res '((A |a| ((A |a|)))
+src/test.lisp:661:          (grammar-3 '((A |a| B)
+src/test.lisp:667:          (grammar-3-res '((A |a| ((A |a|)))
+src/test.lisp:675:          (grammar-4 '((S |i| E |t| S)
+src/test.lisp:679:          (grammar-4-res '((S |i| E |t| S ((S |i|)))
+src/test.lisp:685:      (test grammar-1 grammar-1-res)
+src/test.lisp:686:      (test grammar-2 grammar-2-res)
+src/test.lisp:687:      (test grammar-3 grammar-3-res)
+src/test.lisp:688:      (test grammar-4 grammar-4-res))))
+src/test.lisp:884:(lisp-unit:define-test grammar-atn
+src/test.lisp:914:  (grammar->ATN (grammar))
+src/test.lisp:952:         (atn (grammar->ATN grammar))
+src/test.lisp:989:             (atn-move (grammar->ATN '((A |a| |b|) (A C |b|) (C |d| C |f|) (C |a|)))
+src/run-test.lisp:62:;; (asdf:operate 'asdf:load-op :motion-grammar-kit)
+src/run-test.lisp:69:(in-package :motion-grammar-kit)
+src/graph.lisp:37:(in-package :motion-grammar-kit)
+src/supervisor.lisp:37:(in-package :motion-grammar-kit)
+src/meta-pattern.lisp:37:(in-package :motion-grammar-kit)
+src/logic.lisp:37:(in-package :motion-grammar-kit)
+src/mgk-ach.lisp:39:(in-package :motion-grammar-kit)
+src/util.lisp:39:(in-package :motion-grammar-kit)
+src/grammar.lisp:57:(in-package :motion-grammar-kit)
+src/grammar.lisp:60:(defun grammar-map-list (result function grammar)
+src/grammar.lisp:67:(defun grammar-map (result function grammar)
+src/grammar.lisp:72:  (grammar-map-list result (lambda (prod)
+src/grammar.lisp:78:(defun grammar-fold-list (function initial-value grammar)
+src/grammar.lisp:85:(defun grammar-fold (function initial-value grammar)
+src/grammar.lisp:90:  (grammar-fold-list (lambda (value production)
+src/grammar.lisp:96:(defun grammar-nonterminals (grammar)
+src/grammar.lisp:99:    (grammar-map nil (lambda (l r) (declare (ignore r))
+src/grammar.lisp:104:(defun grammar-terminals (grammar)
+src/grammar.lisp:106:  (let ((nonterms (grammar-nonterminals grammar)))
+src/grammar.lisp:107:    (grammar-fold (lambda (terminals lhs rhs)
+src/grammar.lisp:119:(defun grammar-terminal-p (terminals nonterminals gsymbol)
+src/grammar.lisp:134:(defun grammar-nonterminal-p (terminals nonterminals gsymbol)
+src/grammar.lisp:135:  (not (grammar-terminal-p terminals nonterminals gsymbol)))
+src/grammar.lisp:137:(defun grammar-chain-rule-p (terminals nonterminals production)
+src/grammar.lisp:139:  (assert (grammar-nonterminal-p terminals nonterminals (car production)))
+src/grammar.lisp:141:       (grammar-nonterminal-p terminals nonterminals (second production))))
+src/grammar.lisp:145:(defun grammar-fixpoint (function grammar &key
+src/grammar.lisp:177:(defun grammar-chainable-function (grammar &optional
+src/grammar.lisp:178:                                   (terminals (grammar-terminals grammar))
+src/grammar.lisp:179:                                   (nonterminals (grammar-nonterminals grammar)))
+src/grammar.lisp:182:  (grammar-fixpoint (lambda (head body get-set union-set)
+src/grammar.lisp:188:                                         (grammar-chain-rule-p terminals nonterminals rule))
+src/grammar.lisp:191:(defun grammar-chainable-parent-function (grammar &optional
+src/grammar.lisp:192:                                          (terminals (grammar-terminals grammar))
+src/grammar.lisp:193:                                          (nonterminals (grammar-nonterminals grammar)))
+src/grammar.lisp:196:  (grammar-fixpoint (lambda (head body get-set union-set)
+src/grammar.lisp:202:                                         (grammar-chain-rule-p terminals nonterminals rule))
+src/grammar.lisp:205:(defun grammar-body-function (grammar)
+src/grammar.lisp:210:          (grammar-fold (lambda (h head body)
+src/grammar.lisp:220:(defun grammar-first-nonterminals-function (grammar &optional
+src/grammar.lisp:221:                                            (terminals (grammar-terminals grammar))
+src/grammar.lisp:222:                                            (nonterminals (grammar-nonterminals grammar)))
+src/grammar.lisp:224:  (grammar-fixpoint (lambda (head body get-set union-set)
+src/grammar.lisp:230:                                         (grammar-nonterminal-p terminals nonterminals (second rule)))
+src/grammar.lisp:234:(defun grammar-first-function (grammar &optional
+src/grammar.lisp:235:                               (terminals (grammar-terminals grammar)))
+src/grammar.lisp:239:  (grammar-fixpoint (lambda (head body get-set union-set)
+src/grammar.lisp:245:(defun grammar-list-first (first-function list)
+src/grammar.lisp:258:(defun grammar-follow-function (grammar &optional
+src/grammar.lisp:259:                                (terminals (grammar-terminals grammar))
+src/grammar.lisp:260:                                (nonterminals (grammar-nonterminals grammar))
+src/grammar.lisp:261:                                (first-function (grammar-first-function grammar terminals)))
+src/grammar.lisp:265:  (grammar-fixpoint (lambda (head body get-set union-set)
+src/grammar.lisp:268:                                (when (grammar-nonterminal-p terminals nonterminals B)
+src/grammar.lisp:271:                                               (let ((first-beta (grammar-list-first first-function beta)))
+src/grammar.lisp:279:                    :initial-mapping (list (cons (grammar-start-nonterminal grammar)
+src/grammar.lisp:283:(defun grammar-start-nonterminal (grammar)
+src/grammar.lisp:287:(defun grammar-substitute-terminal-list
+src/grammar.lisp:294:  (grammar-map 'list
+src/grammar.lisp:304:(defun grammar-right-regular-p (grammar)
+src/grammar.lisp:310:  (let ((terminals (grammar-terminals grammar))
+src/grammar.lisp:311:        (nonterminals (grammar-nonterminals grammar)))
+src/grammar.lisp:322:(defun grammar->right-regular (grammar)
+src/grammar.lisp:327:  (let ((terminals (grammar-terminals grammar)))
+src/grammar.lisp:350:(defun grammar->fa (grammar &key accept)
+src/grammar.lisp:354:  (unless (grammar-right-regular-p grammar)
+src/grammar.lisp:355:    (setq grammar (grammar->right-regular grammar)))
+src/grammar.lisp:356:  (let ((terminals (grammar-terminals grammar))
+src/grammar.lisp:357:        (nonterminals (grammar-nonterminals grammar))
+src/grammar.lisp:361:    (grammar-map nil
+src/grammar.lisp:411:(defun grammar-right-regular-minimize (grammar)
+src/grammar.lisp:412:  (fa->right-regular-grammar (fa-canonicalize (grammar->fa grammar))))
+src/grammar.lisp:414:(defun grammar-regular-expand-rule-first (rule regular-grammar &optional (unique (gensym)))
+src/grammar.lisp:419:    (let ((regstart (grammar-start-nonterminal regular-grammar)))
+src/grammar.lisp:421:        (rewrite-grammar-list
+src/grammar.lisp:444:(defun grammar-from-adjacency (adj &key
+src/grammar.lisp:480:  (alexandria:with-gensyms (grammar-var)
+src/grammar.lisp:481:    `(labels ((,name (,grammar-var)
+src/grammar.lisp:482:                (when ,grammar-var
+src/grammar.lisp:484:                                       &rest ,rest-var ) ,grammar-var
+src/grammar.lisp:522:(defun rewrite-grammar-list (function grammar &key
+src/grammar.lisp:556:  (rewrite-grammar-list (lambda (term)
+src/grammar.lisp:563:(defun grammar-remove-epsilon (grammar)
+src/grammar.lisp:570:    (grammar-map nil
+src/grammar.lisp:626:        (grammar-remove-epsilon grammar)
+src/grammar.lisp:631:(defun grammar-remove-unit (grammar)
+src/grammar.lisp:634:  (let* ((terminals (grammar-terminals grammar))
+src/grammar.lisp:635:         (nonterminals (grammar-nonterminals grammar))
+src/grammar.lisp:636:         (chainable (grammar-chainable-parent-function  grammar terminals nonterminals)))
+src/grammar.lisp:637:    (rewrite-grammar-list
+src/grammar.lisp:639:       (unless (grammar-chain-rule-p terminals nonterminals production)
+src/grammar.lisp:648:(defun grammar-print (grammar &key (output *standard-output*) (head-columns 12))
+src/grammar.lisp:649:  (let ((terminals (grammar-terminals grammar)))
+src/grammar.lisp:650:    (grammar-map nil (lambda (head body)
+src/grammar.lisp:664:(defun grammar->cnf (grammar)
+src/grammar.lisp:666:  (let ((terminals (grammar-terminals grammar)))
+src/grammar.lisp:702:(defun grammar-remove-unreachable (grammar &optional
+src/grammar.lisp:703:                                   (terminals (grammar-terminals grammar))
+src/grammar.lisp:704:                                   (nonterminals (grammar-nonterminals grammar)))
+src/grammar.lisp:707:  (let ((body-function (grammar-body-function grammar))
+src/grammar.lisp:708:        (start (grammar-start-nonterminal grammar)))
+src/grammar.lisp:714:                                          (if (and (grammar-nonterminal-p terminals nonterminals x)
+src/grammar.lisp:728:(defun grammar-remove-nonsentential (grammar &optional
+src/grammar.lisp:729:                                     (terminals (grammar-terminals grammar)))
+src/grammar.lisp:732:        (new-v (grammar-fold (lambda (v head body)
+src/grammar.lisp:741:         (setq new-v (grammar-fold (lambda (v head body)
+src/grammar.lisp:750:      (rewrite-grammar-list (lambda (production)
+src/grammar.lisp:756:(defun grammar-remove-useless (grammar &optional
+src/grammar.lisp:757:                               (terminals (grammar-terminals grammar))
+src/grammar.lisp:758:                               (nonterminals (grammar-nonterminals grammar)))
+src/grammar.lisp:760:  (grammar-remove-unreachable (grammar-remove-nonsentential grammar terminals)
+src/grammar.lisp:769:                             (terminals (grammar-terminals grammar))
+src/grammar.lisp:770:                             (nonterminals (grammar-nonterminals grammar))
+src/grammar.lisp:771:                             (chainable-function (grammar-chainable-function grammar terminals nonterminals))
+src/grammar.lisp:772:                             (first-nonterminals-function (grammar-first-nonterminals-function grammar
+src/grammar.lisp:792:                               (let ((first-terminal-p (grammar-terminal-p terminals nonterminals
+src/grammar.lisp:829:(defun blum-koch-subgrammar-productions (b grammar)
+src/grammar.lisp:836:  (let ((terminals (grammar-terminals grammar))
+src/grammar.lisp:837:        (nonterminals (grammar-nonterminals grammar))
+src/grammar.lisp:838:        (start (grammar-start-nonterminal grammar)))
+src/grammar.lisp:839:    (let ((first-nonterminals-function (grammar-first-nonterminals-function grammar terminals nonterminals))
+src/grammar.lisp:840:          (chainable-function (grammar-chainable-function grammar terminals nonterminals))
+src/grammar.lisp:858:        ;(grammar-print h-grammar)
+src/grammar.lisp:884:              (grammar-remove-useless (cons (list 'start start) h-grammar) terminals))
+src/grammar.lisp:885:        (grammar-remove-unit h-grammar)))))
+src/grammar.lisp:887:(defun grammar-nonterm->terminal (grammar nonterm &optional (unique (gensym)))
+src/grammar.lisp:902:(defun grammar-left-factor (grammar &optional (unique (gensym)))
+src/grammar.lisp:918:                              (equal (car p1) (grammar-start-nonterminal grammar))))))
+src/package.lisp:38:(defpackage :motion-grammar-kit
+src/package.lisp:55:   grammar->right-regular grammar->fa fa->right-regular-grammar
+src/package.lisp:56:   grammar->cnf grammar-remove-useless
+src/package.lisp:57:   grammar-print load-bnf save-bnf
+src/package.lisp:59:   pushdown-automaton make-pda grammar->pda
+src/compiler.lisp:37:(in-package :motion-grammar-kit)
+src/codegen.lisp:37:(in-package :motion-grammar-kit)
+src/codegen.lisp:314:(defun grammar->c-predictive-parser (grammar &key
+src/codegen.lisp:321:         (nonterminals (grammar-nonterminals grammar))
+src/codegen.lisp:322:         (terminals (grammar-terminals grammar))
+src/codegen.lisp:323:         (start (grammar-start-nonterminal grammar))
+src/codegen.lisp:326:                                    (cons (grammar-start-nonterminal grammar)
+src/codegen.lisp:420:(defun grammar->c-file (grammar pathname &key
+src/codegen.lisp:430:  (grammar->c-predictive-parser grammar :output pathname
+src/codegen.lisp:435:(defun grammar->c-supervised-predictive-parser (grammar &key
+src/codegen.lisp:441:         (nonterminals (grammar-nonterminals grammar))
+src/codegen.lisp:442:         (terminals (finite-set-tree (grammar-terminals grammar)))
+src/codegen.lisp:443:         (start (grammar-start-nonterminal grammar))
+src/codegen.lisp:446:                                    (cons (grammar-start-nonterminal grammar)
+src/fa.lisp:39:(in-package :motion-grammar-kit)
+src/petri.lisp:39:(in-package :motion-grammar-kit)
+src/regex.lisp:37:(in-package :motion-grammar-kit)
+src/parse.lisp:44:(in-package :motion-grammar-kit)
+src/parse.lisp:67:  (let* ((terminals (grammar-terminals grammar))
+src/parse.lisp:68:         (nonterminals (grammar-nonterminals grammar))
+src/parse.lisp:69:         (first (grammar-first-function grammar terminals))
+src/parse.lisp:70:         (follow (grammar-follow-function grammar terminals nonterminals first))
+src/parse.lisp:72:    (grammar-map nil
+src/parse.lisp:95:                     (let ((first-body (grammar-list-first first body)))
+src/LL-star.lisp:36:(in-package :motion-grammar-kit)
+src/LL-star.lisp:218:  (let* ((atn (grammar->ATN grammar))
+src/pda.lisp:37:(in-package :motion-grammar-kit)
+src/pda.lisp:198:(defun grammar->pda-sipser (grammar &key (gensym (gensym "pda")))
+src/pda.lisp:202:         (edges (list (pda-edge q-start :epsilon :epsilon q-loop (grammar-start-nonterminal grammar) :$)
+src/pda.lisp:205:    (grammar-map nil
+src/pda.lisp:215:                    (grammar-terminals grammar))
+src/pda.lisp:219:(defun grammar->pda (grammar)
+src/pda.lisp:221:  (grammar->pda-sipser grammar))
+src/search.lisp:38:(in-package :motion-grammar-kit)
+src/set.lisp:49:(in-package :motion-grammar-kit)
+src/mg-calculus.lisp:76:  (let ((first-set (grammar-first-function grammar)))
+src/matcher.lisp:29:(in-package :motion-grammar-kit)
+src/atn.lisp:36:(in-package :motion-grammar-kit)
+src/atn.lisp:82:(defun grammar->ATN (grammar)
+src/atn.lisp:89:    ;TODO prettify by having something like "grammar-map-grouped (lambda (head bodys))"
+src/atn.lisp:90:      (make-fa (apply #'append (grammar-map 'list (lambda (head body)
+src/fuzz.lisp:37:(in-package :motion-grammar-kit)
+src/pattern.lisp:37:(in-package :motion-grammar-kit)
+src/python/mangle.lisp:39:(in-package :motion-grammar-kit-python)
+src/python/package.lisp:37:(defpackage :motion-grammar-kit-python
+src/python/package.lisp:38:  (:use :cl :alexandria :motion-grammar-kit)
+src/python/fixup.lisp:37:(in-package :motion-grammar-kit-python)
+src/python/helper.lisp:37:(in-package :motion-grammar-kit-python)
+src/python/bind.lisp:37:(in-package :motion-grammar-kit-python)
+src/python/bind.lisp:39:(def-clpython-package motion-grammar-kit)
+src/python/bind.lisp:40:(bind-clpython-package motion-grammar-kit)
+scripts/make-core.lisp:60:      (funcall (intern "QUICKLOAD" :ql) :motion-grammar-kit)
+scripts/make-core.lisp:61:      (require :motion-grammar-kit)))
+scripts/make-core.lisp:63:;; Make load motion-grammar-kit-ach
+scripts/make-core.lisp:66:      (funcall (intern "QUICKLOAD" :ql) :motion-grammar-kit-ach)
+scripts/make-core.lisp:67:      (require :motion-grammar-kit-ach)))
+scripts/make-core.lisp:71:(if (find-package :motion-grammar-kit)
+config.lisp:38:(cl:defpackage :motion-grammar-kit-config
+config.lisp:42:(in-package :motion-grammar-kit-config)
+config.status:440:ac_pwd='/home/arka3/repos/motion-grammar-kit'
+config.status:927:S["install_sh"]="${SHELL} /home/arka3/repos/motion-grammar-kit/install-sh"
+config.status:928:S["MAKEINFO"]="${SHELL} /home/arka3/repos/motion-grammar-kit/missing --run makeinfo"
+config.status:929:S["AUTOHEADER"]="${SHELL} /home/arka3/repos/motion-grammar-kit/missing --run autoheader"
+config.status:930:S["AUTOMAKE"]="${SHELL} /home/arka3/repos/motion-grammar-kit/missing --run automake-1.11"
+config.status:931:S["AUTOCONF"]="${SHELL} /home/arka3/repos/motion-grammar-kit/missing --run autoconf"
+config.status:932:S["ACLOCAL"]="${SHELL} /home/arka3/repos/motion-grammar-kit/missing --run aclocal-1.11"

@@ -60,7 +60,10 @@ MUTABLE: Should this be a mutable set?
     (t nil)))
 
 (defun finite-set (&rest items)
-  (fold #'finite-set-add (make-finite-set) items))
+  (fold #'finite-set-add (make-finite-set) items)) ;; TODO implement in terms of finite-set-custom
+
+(defun finite-set-custom (init &rest items)
+  (fold #'finite-set-add init items))
 
 (defun map-finite-set (result-type function set)
   "Apply FUNCTION to all members of SET."

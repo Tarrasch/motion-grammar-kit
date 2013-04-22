@@ -349,6 +349,25 @@
                                      (fa-minimize-hopcroft edge-fa)))))
 
 
+(lisp-unit:define-test fa-rewrite-states
+  (let* ((orig (make-fa '((a 1 b)
+                          (b 2 c)
+                          (c 3 d)
+                          )
+                        'a '(b d)))
+         (fun (lambda (x) (format nil "~A~A" x x)))
+         (expected (make-fa '((aa 1 bb)
+                              (bb 2 cc)
+                              (cc 3 dd)
+                              )
+                            'aa '(bb dd)
+                            ))
+         (result (fa-rewrite-states fun orig))
+        )
+
+    (lisp-unit:assert-true (dfa-equal result
+                                      expected))))
+
 
 (lisp-unit:define-test fa-op
   ;; intersection
@@ -805,18 +824,18 @@
                             ((atom) t)))
 
    ;; or patterns
-   (lisp-unit:assert-eq 1
-                        (if-pattern  (or (:pattern b) (:pattern b b)) '(1) b 'no))
-   (lisp-unit:assert-eq 2
-                        (if-pattern  (or (:pattern b) (:pattern b b)) '(2 2) b 'no))
-   (lisp-unit:assert-eq 'no
-                        (if-pattern  (or (:pattern b) (:pattern b b)) '(1 2) b 'no))
+   (lisp-unit:assert-equal 1
+                           (if-pattern  (or (:pattern b) (:pattern b b)) '(1) b 'no))
+   (lisp-unit:assert-equal 2
+                           (if-pattern  (or (:pattern b) (:pattern b b)) '(2 2) b 'no))
+   (lisp-unit:assert-equal 'no
+                           (if-pattern  (or (:pattern b) (:pattern b b)) '(1 2) b 'no))
 
    ;; lambdas
-   (lisp-unit:assert-eq 5
-                        (funcall (pattern-lambda ((:pattern a b a)) (+ a b b)) '(1 2 1)))
-   (lisp-unit:assert-eq 5
-                        (funcall (pattern-lambda (a b a) (+ a b b)) 1 2 1))
+   (lisp-unit:assert-equal 5
+                           (funcall (pattern-lambda ((:pattern a b a)) (+ a b b)) '(1 2 1)))
+   (lisp-unit:assert-equal 5
+                           (funcall (pattern-lambda (a b a) (+ a b b)) 1 2 1))
    
    (let ((myvar 100))
      (lisp-unit:assert-equal '(nil 99 nil 98)
@@ -824,7 +843,198 @@
                                        (incf myvar)
                                        (- a b))
                                      '(hi (100 1) 6 (2 100 2))))
-     (lisp-unit:assert-eq 102 myvar)
+     (lisp-unit:assert-eql 102 myvar)
      )
+
+   ;; and patterns
+   (lisp-unit:assert-equal 5
+                           (if-pattern  (and a (:predicate #'oddp)) 5 a 'no))
+
+   (lisp-unit:assert-equal 'no 
+                           (if-pattern  (and a (:predicate #'evenp)) 5 a 'no))
+
+   (lisp-unit:assert-equal 5
+                           (if-pattern  (and a a) 5 a 'no))
+
+   (lisp-unit:assert-equal 5
+                           (if-pattern  (and a b) 5 a 'no))
+
+   (lisp-unit:assert-equal 25 
+                           (if-pattern  (and a b) 5 (* a b) 'no))
+
+   (lisp-unit:assert-equal 5
+                           (if-pattern  (and a) 5 a 'no))
+
+   (lisp-unit:assert-equal 11 
+                           (if-pattern  (:pattern (and a (:predicate #'oddp)) b) '(5 6) (+ a b) 'no))
+
+   (lisp-unit:assert-equal 'no
+                           (if-pattern  (and (:pattern a a) (:pattern b b)) '(5 6) (+ a b) 'no))
+
+   (lisp-unit:assert-equal 11
+                           (if-pattern  (and (:pattern a b) (:pattern a b)) '(5 6) (+ a b) 'no))
+
+   (lisp-unit:assert-equal 'no
+                           (if-pattern  (and (:pattern a b) (:pattern b a)) '(5 6) (+ a b) 'no))
+
+   (lisp-unit:assert-equal 10
+                           (if-pattern  (and (:pattern a b) (:pattern b a)) '(5 5) (+ a b) 'no))
    )
 
+(lisp-unit:define-test grammar-atn
+  "Collection of tests for all the ll" 
+  (setf my-grammar '((A |a| |b|) (A C |b|) (C |d| |e| |f|) (C |a|)))
+  )
+
+(defun finite-fake-atnconf-set (configurations &optional (also-stack t))
+  (let* ((fake-fun (lambda (atn-state-name) (init-atn-state atn-state-name 'fake 'fake 'fake)))
+         (conf-convert (lambda (config)
+                         (fill-atnconf (funcall fake-fun (atnconf-state config))
+                                       (atnconf-alternative config)
+                                       (if also-stack
+                                         (mapcar fake-fun (atnconf-stack config))
+                                         (atnconf-stack config)
+                                         )
+                                       )
+                         ))
+        )
+    (fold #'finite-set-add (empty-atnconf-set) (mapcar conf-convert configurations)) 
+    )
+  )
+
+(defun assert-atnconf-equal (set expected)
+  (assert-finite-set-equal set
+                           (finite-set-map 'list (lambda (atnconf) (cons (caar atnconf) (cdr atnconf))) expected)))
+
+(defun grammar ()
+  '((A |a| |b|) (A C |b|) (C |d| C |f|) (C |a|))
+  )
+
+(defun atn ()
+  (grammar->ATN (grammar))
+  )
+
+(defun test-closure (start-config tuples &optional (debug nil))
+  "Expected is a list of tuples WITHOUT the alternative fixnum!"
+  (let ((res (atn-closure (atn) (make-empty-dd) start-config))
+        (expected (finite-fake-atnconf-set (mapcar (pattern-lambda ((:pattern x y)) (list x (atnconf-alternative start-config) y)) tuples)))
+        )
+    (when debug (print res))
+    (assert-finite-set-equal expected res)
+    )
+  )
+
+(lisp-unit:define-test ll-star-closure-C
+  (test-closure (list (ATN-start-name 'C) 7 nil)
+                '(("p_C" nil) ("p_7" nil) ("p_11" nil)))
+  )
+
+(lisp-unit:define-test ll-star-closure-A
+  (test-closure (list (ATN-start-name 'A) 5 nil)
+                '(("p_A" nil) ("p_1" nil) ("p_4" nil) ("p_C" ("p_5")) ("p_7" ("p_5")) ("p_11" ("p_5"))))
+  )
+
+(lisp-unit:define-test ll-star-closure-8
+  (test-closure (list (ATN-numeric-name 8 'C 2) 5 nil)
+                '(("p_8" nil) ("p_C" ("p_9")) ("p_7" ("p_9")) ("p_11" ("p_9"))))
+  )
+
+(lisp-unit:define-test ll-star-closure-empty
+  (test-closure (list (ATN-numeric-name 12 'C 3) 5 nil)
+                '(("p_12" nil) ("p_C'" nil) ("p_9" nil) ("p_5" nil)))
+  )
+
+(lisp-unit:define-test ll-star-closure
+  ;; TODO: refactor like the other guys above
+  ;; Slightly harder with different stack rule but still possible
+  "Collection of tests for all the ll" 
+  (let* ((grammar '((A |a| |b|) (A C |b|) (C |d| C |f|) (C |a|)))
+         (atn (grammar->ATN grammar))
+         
+         ;; Test for undoing with nonempty stack
+         (stackNe (list (ATN-numeric-name 9 'C 2) (ATN-numeric-name 5 'A 1)))
+         (resNe (atn-closure atn (make-empty-dd) (list (ATN-numeric-name 12 'C 3) 5 stackNe)))
+         )
+    ;(print resNe)
+    (let ((s stackNe)) ;; s as in stack
+      ;; Note, we don't need (or we shouldn't) fakeify the stack as it already is complete
+      ;(print (finite-fake-atnconf-set `("p_12" 5 ,s) `("p_C'" 5 ,s) `("p_9" 5 ,(cdr s))))
+      (assert-finite-set-equal (finite-fake-atnconf-set `(("p_12" 5 ,s) ("p_C'" 5 ,s) ("p_9" 5 ,(cdr s))) nil) resNe)
+      )
+    )
+  )
+
+(defun ds-only-configurations (configurations)
+  (let ((ds (make-empty-dd)))
+    (setf (dd-configurations ds) configurations)
+    ds))
+
+(lisp-unit:define-test find-predicted-alternatives
+  (labels ((helper (configs)
+             (sort  (find-predicted-alternatives (ds-only-configurations configs)) #'<)))
+    (lisp-unit:assert-equal '(1 3)
+                            (helper '(("p_A" 3 nil) ("a" 1 nil) ("b" 3 nil))))
+
+    (lisp-unit:assert-equal '(1)
+                            (helper '(("p_A" 1 nil) ("a" 1 nil) ("b" 1 nil))))
+
+    (lisp-unit:assert-equal '()
+                            (helper '()))
+
+    )
+  )
+
+(lisp-unit:define-test LL-star-move
+  (labels ((helper (configs terminal)
+             (atn-move (grammar->ATN '((A |a| |b|) (A C |b|) (C |d| C |f|) (C |a|)))
+                       (ds-only-configurations (finite-fake-atnconf-set configs))
+                       terminal
+                       ))
+           (helper-expected (configs)
+             (finite-fake-atnconf-set configs))
+           )
+    (assert-finite-set-equal (helper-expected '(("p_2" 3 nil)))
+                             (helper '(("p_1" 3 nil)) '|a|))
+
+    (assert-finite-set-equal (helper-expected '())
+                             (helper '(("p_1" 3 nil)) '|b|))
+
+
+    (assert-finite-set-equal (helper-expected '(("p_5" 3 nil)))
+                             (helper '(("p_4" 3 nil)) '|C|)) ; XXX: Note illegal input just to show how it works
+
+    (assert-finite-set-equal (helper-expected '(("p_2" 3 nil) ("p_12" 2 nil) ("p_2" 3 ("p_9"))))
+                             (helper '(("p_1" 3 nil) ("p_11" 2 nil) ("p_1" 3 ("p_9")) ("p_3" 2 nil)) '|a|))
+    )
+  )
+
+(defun assert-fa-equivalent (expected actual)
+  (lisp-unit:assert-true (dfa-equal expected actual)))
+
+(lisp-unit:define-test ll-star-create-dfa
+  ;; TODO: Also test that productions have the right id in the final states
+  (let* ((my-grammar '((A |a| |b|) (A C |g|) (C |d| C |f|) (C |a|)))
+         ;; This grammar is relatively easy because it's unambigious (though
+         ;; not seen trivially) and there are no backloops
+         (resA (create-dfa my-grammar 'A))
+         (resC (create-dfa my-grammar 'C))
+         )
+    
+    (assert-fa-equivalent (make-fa '((s0 |a| s1) (s0 |d| f1) (s1 |g| f1) (s1 |b| f0)) 's0 '(f0 f1)) resA)
+    (assert-fa-equivalent (make-fa '((s0 |a| f3) (s0 |d| f2)) 's0 '(f2 f3)) resC)
+    )
+
+  (let* ((my-grammar '((A L |b|) (A L |d|) (L) (L |a| L)))
+         ;; This grammar is relatively easy because it's unambigious (though
+         ;; not seen trivially) and there are no backloops
+         (resA (create-dfa my-grammar 'A))
+         (resL (create-dfa my-grammar 'L))
+         )
+    
+    (assert-fa-equivalent (make-fa '((s0 |a| s1) (s0 |b| f0) (s0 |d| f1)
+                                     (s1 |a| s1) (s1 |b| f0) (s1 |d| f1)) 's0 '(f0 f1)) resA)
+    ;; Actually, the fa above is not as good as it could be, but it's still ok.
+   
+    (assert-fa-equivalent (make-fa '((s0 |a| f3) (s0 |d| f2) (s0 |b| f2)) 's0 '(f2 f3)) resL)
+    )
+   )
