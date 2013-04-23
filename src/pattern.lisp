@@ -183,23 +183,27 @@
                   ,(pattern-continue then (append or-bindings bindings))))
            ,inner))))))
 
+(defun pattern-compile-and (patterns exp bindings then else)
+  (declare (type symbol exp))
+  (pattern-compile-exp :pattern patterns (make-sequence 'list (length patterns) :initial-element exp) bindings then else))
 
 (defun pattern-compile-exp (car cdr exp bindings then else)
   (declare (type symbol exp car))
   (case car
     ;; predicates
     (:predicate
-     (pattern-compile-predicate bindings (car cdr) (cdr cdr) exp then else))
+      (pattern-compile-predicate bindings (car cdr) (cdr cdr) exp then else))
     (quote ; atom consp listp equal eq symbolp keywordp numberp)
-     (destructuring-bind (symbol) cdr
-       (pattern-compile-predicate bindings 'eq `(',symbol) exp then else)))
+      (destructuring-bind (symbol) cdr
+        (pattern-compile-predicate bindings 'eq `(',symbol) exp then else)))
     ;; or pattern
     (or (pattern-compile-or cdr exp bindings then else))
+    ;; and pattern
+    ;(and (pattern-compile-and cdr exp bindings then else))
     ;; nested pattern
     (:pattern (pattern-compile-pattern cdr exp bindings then else))
     (otherwise
-     (pattern-compile-meta (cons car cdr) exp bindings then else))))
-
+      (pattern-compile-meta (cons car cdr) exp bindings then else))))
 
 (defmacro if-pattern (pattern exp then &optional else)
   (let* ((exp-sym (if (constantp pattern) pattern
@@ -230,9 +234,13 @@
       `(let ((,exp-sym ,exp))
          ,(helper cases)))))
 
-(defmacro pattern-lambda (pattern &body body)
+(defmacro pattern-lambda (pattern &rest body)
   (with-gensyms (vars)
     `(lambda (&rest ,vars) (if-pattern (:pattern ,@pattern) ,vars (progn ,@body) nil))))
+
+(defmacro pattern-lambda-else (pattern then else)
+  (with-gensyms (vars)
+    `(lambda (&rest ,vars) (if-pattern (:pattern ,@pattern) ,vars ,then ,else))))
 
 (defmacro def-meta-pattern (meta-pattern replacement-pattern)
   "During pattern expansion, if a pattern matches META-PATTERN,
