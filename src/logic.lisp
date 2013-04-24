@@ -255,6 +255,7 @@ A conjunction of disjunctions of literals."
               (sb-ext:run-program "minisat" (list dimacs-pathname minisat-result-pathname)
                                   :wait t
                                   :search t)))
+         (print (list dimacs-pathname minisat-result-pathname))
          (ecase (sb-ext:process-exit-code  minisat-process)
            (0 (error "minisat failed"))
            (1 (error "minisat interrupted by sigint or couldn't read input"))
