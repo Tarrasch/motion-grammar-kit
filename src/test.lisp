@@ -1108,6 +1108,9 @@
   (let* ((my-grammar '((A |a| |b| |c| |d| |e| B |f|) (A |a| |b| |c| |d| B |f|) (B |e| |e| A) (B |e| |e| B) (B )))
          (resA (create-dfa my-grammar 'A))
          (resB (create-dfa my-grammar 'B)))
+
+    (fa-pdf (fa-rewrite-states #'atn-state-name (atn-fa (grammar->ATN my-grammar))))
+    (fa-pdf resA :OUTPUT "/tmp/dfa.pdf")
     (assert-fa-equivalent (make-fa '((s0 |a| s1) (s1 |b| s2) (s2 |c| s3) (s3 |d| s4)
                                      (s4 |e| s6) (s4 |f| f1)
                                      (s6 |e| s7) (s6 |f| f0)
